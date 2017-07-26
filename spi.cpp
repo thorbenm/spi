@@ -168,3 +168,49 @@ double analog_digital_converter::read_voltage(uint8_t channel, unsigned int cs){
 	return code_to_voltage(read(channel,cs));
 }
 
+//new from here:
+
+digital_potentiometer::digital_potentiometer(unsigned int _clock_speed, unsigned int _bits, double _min_resistance, double _max_resistance, unsigned int _cs){
+	clock_speed = _clock_speed;
+	bits = _bits;
+	min_resistance = _min_resistance;
+	max_resistance = _max_resistance;
+	cs = _cs; 
+
+	if (spi_setup[cs] == false){
+		wiringPiSPISetup (cs, clock_speed) ;
+		wiringPiSetup () ;
+		spi_setup[cs] = true;
+	}else{
+		std::cerr << "chip select " << cs << " is already in use"; 
+		exit(0);
+	}
+
+//	transmit_resistance();
+}
+
+uint16_t digital_potentiometer::resistance_to_code(double resistance){
+	double value = map(resistance, min_resistance, max_resistance, 0.0 , pow(2.0, (double) bits) - 1.0); 
+	uint8_t code = (uint8_t) value;
+	return code;
+}
+
+double digital_potentiometer::code_to_resistance(uint8_t code){
+	double value = (double) code;
+	value = map(value, 0.0 , pow(2.0, (double) bits) - 1.0, min_resistance , max_resistance); 
+	return value;
+}
+
+void digital_potentiometer::transmit(uint8_t input, unsigned int cs){
+	if(bits != 8){
+		std::cerr << "Programme is hardcoded for bits = 8";
+		exit(0);
+	}
+	uint16_t transmission = input << 8;
+	wiringPiSPIDataRW (cs, (unsigned char*)&transmission, sizeof(transmission));
+}
+
+void digital_potentiometer::transmit_resistance(double resistance, unsigned int cs){
+	transmit(resistance_to_code(resistance), cs);
+}
+

@@ -48,6 +48,22 @@ class analog_digital_converter{
 	unsigned int cs; 
 };
 
+class digital_potentiometer{
+	public:
+	digital_potentiometer(unsigned int, unsigned int, double , double, unsigned int);
+	uint16_t resistance_to_code(double voltage);
+	double code_to_resistance(uint8_t code);
+	void transmit(uint8_t code = 0, unsigned int cs = 0);
+	void transmit_resistance(double voltage = 0, unsigned int cs = 0);
+
+	private:
+	unsigned int clock_speed;
+	unsigned int bits;
+	double min_resistance; // dac output at transmitting 0;
+	double max_resistance;  // dac output at transmitting 2^bits (hightest value)   BEWARE ORIENTATION!!!
+	unsigned int cs; 
+};
+
 
 double map(double, double, double, double, double);
 
