@@ -1,3 +1,12 @@
+/*
+TODO:
+-Something is wrong with the cs
+*/
+
+
+
+
+
 #include "spi.h"
 
 bool spi_setup[2] = {false, false};
@@ -201,16 +210,25 @@ double digital_potentiometer::code_to_resistance(uint8_t code){
 	return value;
 }
 
-void digital_potentiometer::transmit(uint8_t input, unsigned int cs){
+void digital_potentiometer::transmit(int input){//, unsigned int cs){
+	if(input < resistance_to_code(min_resistance)){
+		std::cerr << "resistance too low" << std::endl;
+		input = resistance_to_code(min_resistance);
+	}
+	if(input > resistance_to_code(max_resistance)){
+		std::cerr << "resistance too high" << std::endl;
+		input = resistance_to_code(max_resistance);
+	}
 	if(bits != 8){
 		std::cerr << "Programme is hardcoded for bits = 8";
 		exit(0);
 	}
-	uint16_t transmission = input << 8;
+	uint8_t input2 = (uint8_t) input;
+	uint16_t transmission = input2 << 8;
 	wiringPiSPIDataRW (cs, (unsigned char*)&transmission, sizeof(transmission));
 }
 
-void digital_potentiometer::transmit_resistance(double resistance, unsigned int cs){
-	transmit(resistance_to_code(resistance), cs);
+void digital_potentiometer::transmit_resistance(double resistance){//, unsigned int cs){
+	transmit(resistance_to_code(resistance));//, cs);
 }
 
